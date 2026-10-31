@@ -1,0 +1,1 @@
+import{a2 as r,a3 as o,J as n}from"./D_QGd_pB.js";const m=r(async i=>{let e,t;if(i.path!=="/admin/login")try{const{user:a}=([e,t]=o(()=>$fetch("/api/admin/me")),e=await e,t(),e);if(!a||a.role!=="admin")return n("/admin/login")}catch{return n("/admin/login")}});export{m as default};
