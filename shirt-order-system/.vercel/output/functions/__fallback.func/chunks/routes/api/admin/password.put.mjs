@@ -6,6 +6,7 @@ import 'drizzle-orm/neon-http';
 import 'exceljs';
 import 'drizzle-orm';
 import 'drizzle-orm/pg-core';
+import '@aws-sdk/client-s3';
 import 'node:crypto';
 import 'node:http';
 import 'node:https';

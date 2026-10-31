@@ -20,7 +20,10 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1161.0",
     "@formkit/auto-animate": "^0.8.2",
+    "@neon/config": "^1.10.0",
+    "@neon/env": "^1.6.8",
     "@neondatabase/serverless": "^0.10.4",
     "@nuxt/fonts": "^0.10.3",
     "@nuxt/icon": "^1.8.2",
@@ -42,6 +45,7 @@
   },
   "devDependencies": {
     "@nuxt/eslint": "^0.7.3",
+    "@nuxtjs/tailwindcss": "^6.12.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/canvas-confetti": "^1.6.4",
     "drizzle-kit": "^0.28.1",
@@ -49,7 +53,6 @@
     "tailwindcss": "^3.4.16",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "@nuxtjs/tailwindcss": "^6.12.2"
+    "vitest": "^2.1.8"
   }
 }

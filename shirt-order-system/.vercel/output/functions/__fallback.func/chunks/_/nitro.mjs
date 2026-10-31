@@ -4,6 +4,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import ExcelJS from 'exceljs';
 import { sql, eq, lt, and, gte } from 'drizzle-orm';
 import { pgTable, timestamp, text, integer, numeric, uuid, index, boolean, serial } from 'drizzle-orm/pg-core';
+import { PutObjectCommand, GetObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 import nodeCrypto, { createHash } from 'node:crypto';
 import http from 'node:http';
 import https from 'node:https';
@@ -3317,10 +3318,10 @@ function createNodeFetch() {
     return l(input, { ...nodeFetchOptions, ...init });
   };
 }
-const fetch = globalThis.fetch ? (...args) => globalThis.fetch(...args) : createNodeFetch();
+const fetch$1 = globalThis.fetch ? (...args) => globalThis.fetch(...args) : createNodeFetch();
 const Headers$1 = globalThis.Headers || s;
 const AbortController = globalThis.AbortController || i;
-const ofetch = createFetch({ fetch, Headers: Headers$1, AbortController });
+const ofetch = createFetch({ fetch: fetch$1, Headers: Headers$1, AbortController });
 const $fetch$1 = ofetch;
 
 function wrapToPromise(value) {
@@ -5050,7 +5051,7 @@ function _expandFromEnv(value) {
 const _inlineRuntimeConfig = {
   "app": {
     "baseURL": "/",
-    "buildId": "9f44ce08-f9bf-47e7-a2f1-7566c9f5ee14",
+    "buildId": "f461484e-687b-4599-93cc-04cae577af6e",
     "buildAssetsDir": "/_nuxt/",
     "cdnURL": ""
   },
@@ -5085,6 +5086,7 @@ const _inlineRuntimeConfig = {
   },
   "public": {
     "siteUrl": "http://localhost:3000",
+    "neonRealtimeUrl": "",
     "auth": {
       "loadStrategy": "server-first"
     }
@@ -5093,6 +5095,14 @@ const _inlineRuntimeConfig = {
   "sessionPassword": "",
   "adminUsername": "",
   "adminPasswordHash": "",
+  "neonRealtimeUrl": "",
+  "neonRealtimeSecret": "",
+  "neonFunctionHelloBaseUrl": "",
+  "awsAccessKeyId": "",
+  "awsSecretAccessKey": "",
+  "awsEndpointUrlS3": "",
+  "awsRegion": "",
+  "neonObjectStorageBucket": "assets",
   "icon": {
     "serverKnownCssClasses": []
   },
@@ -6461,7 +6471,7 @@ const schema = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
 
 function useDb() {
   const config = useRuntimeConfig();
-  const databaseUrl = config.databaseUrl;
+  const databaseUrl = config.databaseUrl || process.env.NUXT_DATABASE_URL || process.env.DATABASE_URL;
   if (!databaseUrl) {
     throw createError$1({
       statusCode: 500,
@@ -6863,6 +6873,62 @@ async function checkRateLimit(db, key, maxAttempts, windowMinutes) {
   return true;
 }
 
+function getNeonS3Client() {
+  const endpoint = process.env.AWS_ENDPOINT_URL_S3;
+  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+  const region = process.env.AWS_REGION || "ap-southeast-1";
+  if (!endpoint || !accessKeyId || !secretAccessKey) {
+    throw new Error("Neon Object Storage environment variables (AWS_ENDPOINT_URL_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) are not configured");
+  }
+  return new S3Client({
+    endpoint,
+    region,
+    credentials: {
+      accessKeyId,
+      secretAccessKey
+    },
+    forcePathStyle: true
+  });
+}
+async function uploadObjectToBucket(key, body, contentType = "application/octet-stream", bucket = process.env.NEON_OBJECT_STORAGE_BUCKET || "assets") {
+  const client = getNeonS3Client();
+  await client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: typeof body === "string" ? Buffer.from(body) : body,
+      ContentType: contentType
+    })
+  );
+  return { success: true, bucket, key };
+}
+async function getObjectFromBucket(key, bucket = process.env.NEON_OBJECT_STORAGE_BUCKET || "assets") {
+  var _a;
+  const client = getNeonS3Client();
+  const res = await client.send(
+    new GetObjectCommand({
+      Bucket: bucket,
+      Key: key
+    })
+  );
+  const bytes = await ((_a = res.Body) == null ? void 0 : _a.transformToByteArray());
+  return {
+    key,
+    contentType: res.ContentType,
+    data: bytes ? Buffer.from(bytes) : null
+  };
+}
+async function listBucketObjects(bucket = process.env.NEON_OBJECT_STORAGE_BUCKET || "assets") {
+  const client = getNeonS3Client();
+  const res = await client.send(
+    new ListObjectsV2Command({
+      Bucket: bucket
+    })
+  );
+  return res.Contents || [];
+}
+
 const collections = {
 };
 
@@ -6947,6 +7013,10 @@ const _lazy_oaPLqG = () => import('../routes/api/admin/password.put.mjs');
 const _lazy_UvNmbY = () => import('../routes/api/admin/settings.get.mjs');
 const _lazy_EI0Y_v = () => import('../routes/api/admin/settings.put.mjs');
 const _lazy_jRMyMB = () => import('../routes/api/admin/stats.get.mjs');
+const _lazy_5o9vi0 = () => import('../routes/api/neon/health.get.mjs');
+const _lazy_EUZ0Px = () => import('../routes/api/neon/hello.get.mjs');
+const _lazy_hC8qWT = () => import('../routes/api/neon/realtime.get.mjs');
+const _lazy_qhHWpX = () => import('../routes/api/neon/storage.get.mjs');
 const _lazy_F1QYWJ = () => import('../routes/api/public/config.get.mjs');
 const _lazy_0Ie43_ = () => import('../routes/api/public/orders.post.mjs');
 const _lazy_QF6Fpr = () => import('../routes/api/public/track.post.mjs');
@@ -6967,6 +7037,10 @@ const handlers = [
   { route: '/api/admin/settings', handler: _lazy_UvNmbY, lazy: true, middleware: false, method: "get" },
   { route: '/api/admin/settings', handler: _lazy_EI0Y_v, lazy: true, middleware: false, method: "put" },
   { route: '/api/admin/stats', handler: _lazy_jRMyMB, lazy: true, middleware: false, method: "get" },
+  { route: '/api/neon/health', handler: _lazy_5o9vi0, lazy: true, middleware: false, method: "get" },
+  { route: '/api/neon/hello', handler: _lazy_EUZ0Px, lazy: true, middleware: false, method: "get" },
+  { route: '/api/neon/realtime', handler: _lazy_hC8qWT, lazy: true, middleware: false, method: "get" },
+  { route: '/api/neon/storage', handler: _lazy_qhHWpX, lazy: true, middleware: false, method: "get" },
   { route: '/api/public/config', handler: _lazy_F1QYWJ, lazy: true, middleware: false, method: "get" },
   { route: '/api/public/orders', handler: _lazy_0Ie43_, lazy: true, middleware: false, method: "post" },
   { route: '/api/public/track', handler: _lazy_QF6Fpr, lazy: true, middleware: false, method: "post" },
@@ -7119,5 +7193,5 @@ function useNitroApp() {
 }
 runNitroPlugins(nitroApp);
 
-export { $fetch$1 as $, calculateLineTotal as A, calculateOrderTotal as B, getUniqueOrderCode as C, hashPassword as D, buildAssetsURL as E, publicAssetsURL as F, encodePath as G, defineRenderHandler as H, getRouteRules as I, getResponseStatusText as J, getResponseStatus as K, parseURL as L, decodePath as M, hasProtocol as N, isScriptProtocol as O, joinURL as P, klona as Q, sanitizeStatusCode as R, defuFn as S, getContext as T, baseURL as U, defu as V, createHooks$1 as W, executeAsync as X, appendResponseHeader as Y, withTrailingSlash as Z, withoutTrailingSlash as _, useDb as a, getQuery as b, orderItems as c, defineEventHandler as d, sizes as e, sleeveTypes as f, getRouteRulesForPath as g, createError$1 as h, buildOrdersExcel as i, setResponseHeaders as j, readBody as k, getRequestIP as l, checkRateLimit as m, useRuntimeConfig as n, orders as o, parseQuery as p, setUserSession as q, requireAdminSession as r, settings as s, toNodeListener as t, useNitroApp as u, verifyPassword as v, withQuery as w, clearUserSession as x, getRouterParam as y, calculateUnitPrice as z };
+export { $fetch$1 as $, calculateLineTotal as A, calculateOrderTotal as B, getUniqueOrderCode as C, hashPassword as D, uploadObjectToBucket as E, getObjectFromBucket as F, listBucketObjects as G, buildAssetsURL as H, publicAssetsURL as I, encodePath as J, defineRenderHandler as K, getRouteRules as L, getResponseStatusText as M, getResponseStatus as N, parseURL as O, decodePath as P, hasProtocol as Q, isScriptProtocol as R, joinURL as S, klona as T, sanitizeStatusCode as U, defuFn as V, getContext as W, baseURL as X, defu as Y, createHooks$1 as Z, executeAsync as _, useDb as a, appendResponseHeader as a0, withTrailingSlash as a1, withoutTrailingSlash as a2, getQuery as b, orderItems as c, defineEventHandler as d, sizes as e, sleeveTypes as f, getRouteRulesForPath as g, createError$1 as h, buildOrdersExcel as i, setResponseHeaders as j, readBody as k, getRequestIP as l, checkRateLimit as m, useRuntimeConfig as n, orders as o, parseQuery as p, setUserSession as q, requireAdminSession as r, settings as s, toNodeListener as t, useNitroApp as u, verifyPassword as v, withQuery as w, clearUserSession as x, getRouterParam as y, calculateUnitPrice as z };
 //# sourceMappingURL=nitro.mjs.map

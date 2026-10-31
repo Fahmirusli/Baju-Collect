@@ -1,5 +1,5 @@
 import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { defineComponent, computed, h, readonly, toValue, getCurrentInstance, onServerPrefetch, hasInjectionContext, inject, toRef, isRef, ref, getCurrentScope, shallowRef, nextTick, unref, defineAsyncComponent, provide, shallowReactive, createElementBlock, cloneVNode, useSSRContext, createApp, isVNode, createCommentVNode, withCtx, createVNode, onErrorCaptured, resolveDynamicComponent, reactive, effectScope, Suspense, mergeProps, Fragment, isReadonly, isShallow, isReactive, toRaw } from 'vue';
-import { L as parseURL, G as encodePath, M as decodePath, N as hasProtocol, O as isScriptProtocol, P as joinURL, w as withQuery, Q as klona, R as sanitizeStatusCode, S as defuFn, T as getContext, h as createError$1, $ as $fetch$1, U as baseURL, V as defu, W as createHooks, X as executeAsync$1, Y as appendResponseHeader } from '../_/nitro.mjs';
+import { O as parseURL, J as encodePath, P as decodePath, Q as hasProtocol, R as isScriptProtocol, S as joinURL, w as withQuery, T as klona, U as sanitizeStatusCode, V as defuFn, W as getContext, h as createError$1, $ as $fetch$1, X as baseURL, Y as defu, Z as createHooks, _ as executeAsync$1, a0 as appendResponseHeader } from '../_/nitro.mjs';
 import { useRoute as useRoute$1, RouterView, START_LOCATION, createMemoryHistory, createRouter } from 'vue-router';
 import { Icon, getIcon, loadIcon as loadIcon$1, _api, addAPIProvider, setCustomIconsLoader } from '@iconify/vue';
 import { ssrRenderTeleport, ssrRenderList, ssrRenderClass, ssrRenderComponent, ssrInterpolate, ssrRenderAttrs, ssrRenderSuspense, ssrRenderVNode } from 'vue/server-renderer';
@@ -12,6 +12,7 @@ import 'drizzle-orm/neon-http';
 import 'exceljs';
 import 'drizzle-orm';
 import 'drizzle-orm/pg-core';
+import '@aws-sdk/client-s3';
 import 'node:crypto';
 import 'node:http';
 import 'node:https';

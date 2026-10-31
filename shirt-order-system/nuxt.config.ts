@@ -19,8 +19,17 @@ export default defineNuxtConfig({
     sessionPassword: '',
     adminUsername: '',
     adminPasswordHash: '',
+    neonRealtimeUrl: '',
+    neonRealtimeSecret: '',
+    neonFunctionHelloBaseUrl: '',
+    awsAccessKeyId: '',
+    awsSecretAccessKey: '',
+    awsEndpointUrlS3: '',
+    awsRegion: '',
+    neonObjectStorageBucket: 'assets',
     public: {
       siteUrl: 'http://localhost:3000',
+      neonRealtimeUrl: '',
     },
   },
 

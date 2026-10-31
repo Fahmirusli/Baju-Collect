@@ -1,5 +1,5 @@
 import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLinks } from 'vue-bundle-renderer/runtime';
-import { E as buildAssetsURL, F as publicAssetsURL, n as useRuntimeConfig, G as encodePath, H as defineRenderHandler, b as getQuery, h as createError, I as getRouteRules, J as getResponseStatusText, K as getResponseStatus, u as useNitroApp } from '../_/nitro.mjs';
+import { H as buildAssetsURL, I as publicAssetsURL, n as useRuntimeConfig, J as encodePath, K as defineRenderHandler, b as getQuery, h as createError, L as getRouteRules, M as getResponseStatusText, N as getResponseStatus, u as useNitroApp } from '../_/nitro.mjs';
 import { renderToString } from 'vue/server-renderer';
 import { createHead as createHead$1, propsToString, renderSSRHead } from 'unhead/server';
 import { stringify, uneval } from 'devalue';

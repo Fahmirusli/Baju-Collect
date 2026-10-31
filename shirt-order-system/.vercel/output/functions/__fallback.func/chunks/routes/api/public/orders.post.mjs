@@ -7,6 +7,7 @@ import '@neondatabase/serverless';
 import 'drizzle-orm/neon-http';
 import 'exceljs';
 import 'drizzle-orm/pg-core';
+import '@aws-sdk/client-s3';
 import 'node:http';
 import 'node:https';
 import 'node:events';

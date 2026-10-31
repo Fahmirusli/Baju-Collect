@@ -1,4 +1,4 @@
-import { X as executeAsync } from '../_/nitro.mjs';
+import { _ as executeAsync } from '../_/nitro.mjs';
 import { d as defineNuxtRouteMiddleware, n as navigateTo } from './server.mjs';
 import 'bcryptjs';
 import '@neondatabase/serverless';
@@ -6,6 +6,7 @@ import 'drizzle-orm/neon-http';
 import 'exceljs';
 import 'drizzle-orm';
 import 'drizzle-orm/pg-core';
+import '@aws-sdk/client-s3';
 import 'node:crypto';
 import 'node:http';
 import 'node:https';

@@ -8,7 +8,7 @@ import * as schema from '../database/schema';
  */
 export function useDb() {
   const config = useRuntimeConfig();
-  const databaseUrl = config.databaseUrl as string;
+  const databaseUrl = (config.databaseUrl || process.env.NUXT_DATABASE_URL || process.env.DATABASE_URL) as string;
 
   if (!databaseUrl) {
     throw createError({
