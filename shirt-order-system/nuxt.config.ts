@@ -28,7 +28,7 @@ export default defineNuxtConfig({
     awsRegion: process.env.AWS_REGION || 'ap-southeast-1',
     neonObjectStorageBucket: process.env.NEON_OBJECT_STORAGE_BUCKET || 'assets',
     public: {
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')),
       neonRealtimeUrl: process.env.NEON_REALTIME_URL || '',
     },
   },
