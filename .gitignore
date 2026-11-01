@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Production build outputs
+.output/
+.nuxt/
+.vercel/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.log
+
+# Neon temporary files
+.neon/

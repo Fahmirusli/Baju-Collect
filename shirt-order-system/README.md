@@ -195,4 +195,21 @@ npm run test
   - Restart the dev server (`npm run dev`) after changing `.env`.
 - **Excel Download Issues**:
   - The Excel export endpoint returns raw binary data (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`). It must be accessed while logged into the admin session.
+- **Vercel 500 `FUNCTION_INVOCATION_FAILED`**:
+  - This occurs when `.env` is not uploaded to Vercel (since it is gitignored) and the required environment variables are missing from the Vercel Dashboard.
+  - Go to **Vercel Dashboard → Your Project → Settings → Environment Variables**.
+  - Add `NUXT_DATABASE_URL` (your Neon pooled connection string) and `NUXT_SESSION_PASSWORD` (32+ character secret).
+  - Redeploy.
+
+---
+
+## 🔄 CI/CD Pipelines
+
+Automated workflows are located in `.github/workflows/`:
+
+1. **`ci.yml`**: Runs on all pushes and PRs. Installs dependencies, runs Vitest unit tests, and verifies production compilation.
+2. **`preview-neon.yml`**: Triggers on pull requests. Uses `neondatabase/create-branch-action` to spawn an instant, isolated Neon database preview branch and automatically runs migrations against it.
+3. **`cleanup-neon.yml`**: Triggers when a PR is closed or merged. Automatically deletes the ephemeral Neon preview branch.
+4. **`deploy-production.yml`**: Triggers on push to `main`. Runs migrations against your production Neon database and deploys the live app to Vercel.
+
 

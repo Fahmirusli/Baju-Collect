@@ -1,0 +1,61 @@
+name: Neon Ephemeral Preview Branch
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  create-preview-branch:
+    name: Provision Neon Preview Branch
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: ./shirt-order-system/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: ./shirt-order-system
+        run: npm ci
+
+      - name: Create Neon Preview Branch
+        id: create-branch
+        uses: neondatabase/create-branch-action@v5
+        with:
+          project_id: quiet-sky-73970472
+          parent: production
+          branch_name: preview/pr-${{ github.event.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      - name: Run Schema Migrations on Preview Branch
+        working-directory: ./shirt-order-system
+        run: npm run db:migrate
+        env:
+          NUXT_DATABASE_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
+          DATABASE_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
+
+      - name: Comment PR with Neon Branch Details
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branchName = 'preview/pr-${{ github.event.number }}';
+            const body = `### 🚀 Neon Preview Database Created
+            - **Branch**: \`${branchName}\`
+            - **Parent**: \`production\`
+            - **Status**: Migrations applied successfully.
+            - This branch will automatically be deleted when this PR is closed.`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+

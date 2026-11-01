@@ -5,9 +5,9 @@ import { settings, sizes, sleeveTypes } from '~/server/database/schema'
 import type { PublicConfig } from '~/shared/types'
 
 export default defineEventHandler(async (): Promise<PublicConfig> => {
-  const db = useDb()
-
   try {
+    const db = useDb()
+
     const [settingsRow] = await db
       .select()
       .from(settings)
