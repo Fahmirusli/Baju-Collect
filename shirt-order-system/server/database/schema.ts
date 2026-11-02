@@ -25,6 +25,18 @@ export const settings = pgTable('settings', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });
 
+// ─── Users (Admin / Staff accounts) ─────────────────────────────────────────
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  username: text('username').unique().notNull(),
+  passwordHash: text('password_hash').notNull(),
+  name: text('name').notNull().default('Admin'),
+  email: text('email'),
+  role: text('role').notNull().default('admin'),
+  createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
+});
+
 // ─── Sizes ───────────────────────────────────────────────────────────────────
 export const sizes = pgTable('sizes', {
   id: serial('id').primaryKey(),
@@ -104,6 +116,9 @@ export const rateLimits = pgTable(
 );
 
 // ─── Inferred Types ──────────────────────────────────────────────────────────
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+
 export type Settings = typeof settings.$inferSelect;
 export type NewSettings = typeof settings.$inferInsert;
 

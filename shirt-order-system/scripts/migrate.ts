@@ -32,7 +32,33 @@ async function runMigration() {
     );
   `
 
-  // 2. Sizes table
+  // 2. Users table (Admin / Staff credentials stored in Neon DB)
+  await sql`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      name TEXT NOT NULL DEFAULT 'Admin',
+      email TEXT,
+      role TEXT NOT NULL DEFAULT 'admin',
+      created_at TIMESTAMPTZ DEFAULT now(),
+      updated_at TIMESTAMPTZ DEFAULT now()
+    );
+  `
+
+  // Seed default admin user into users table if not already present
+  await sql`
+    INSERT INTO users (username, password_hash, name, role)
+    VALUES (
+      'admin',
+      '$2a$10$xGHRQ5ZDwGgEPYLXCYLhm.S14TmUlUt1GiYwm5R72BlRwCZwz1/WW',
+      'System Admin',
+      'admin'
+    )
+    ON CONFLICT (username) DO NOTHING;
+  `
+
+  // 3. Sizes table
   await sql`
     CREATE TABLE IF NOT EXISTS sizes (
       id SERIAL PRIMARY KEY,
@@ -43,7 +69,7 @@ async function runMigration() {
     );
   `
 
-  // 3. Sleeve Types table
+  // 4. Sleeve Types table
   await sql`
     CREATE TABLE IF NOT EXISTS sleeve_types (
       id SERIAL PRIMARY KEY,
@@ -54,7 +80,7 @@ async function runMigration() {
     );
   `
 
-  // 4. Orders table
+  // 5. Orders table
   await sql`
     CREATE TABLE IF NOT EXISTS orders (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -75,7 +101,7 @@ async function runMigration() {
     );
   `
 
-  // 5. Order Items table (with sleeve_label migration check)
+  // 6. Order Items table
   await sql`
     CREATE TABLE IF NOT EXISTS order_items (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -89,13 +115,13 @@ async function runMigration() {
     );
   `
 
-  // Migration path: ensure sleeve_label exists if upgrading an existing db
+  // Ensure sleeve_label exists if upgrading an existing db
   await sql`
     ALTER TABLE order_items 
     ADD COLUMN IF NOT EXISTS sleeve_label TEXT NOT NULL DEFAULT 'Short Sleeve';
   `
 
-  // 6. Rate limits table
+  // 7. Rate limits table
   await sql`
     CREATE TABLE IF NOT EXISTS rate_limits (
       id SERIAL PRIMARY KEY,
@@ -106,6 +132,7 @@ async function runMigration() {
   `
 
   // Indexes
+  await sql`CREATE INDEX IF NOT EXISTS users_username_idx ON users(username);`
   await sql`CREATE INDEX IF NOT EXISTS orders_code_idx ON orders(code);`
   await sql`CREATE INDEX IF NOT EXISTS orders_created_at_idx ON orders(created_at);`
   await sql`CREATE INDEX IF NOT EXISTS order_items_order_id_idx ON order_items(order_id);`
@@ -113,11 +140,10 @@ async function runMigration() {
   await sql`CREATE INDEX IF NOT EXISTS order_items_sleeve_label_idx ON order_items(sleeve_label);`
   await sql`CREATE INDEX IF NOT EXISTS rate_limits_key_idx ON rate_limits(key);`
 
-  console.log('[db:migrate] Schema applied successfully!\n')
+  console.log('[db:migrate] Schema and users table applied successfully!\n')
 }
 
 runMigration().catch((err) => {
   console.error('[db:migrate] Migration failed:', err)
   process.exit(1)
 })
-

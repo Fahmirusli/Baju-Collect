@@ -7,7 +7,7 @@ const SALT_ROUNDS = 10;
  * Require an authenticated admin session.
  * Throws a 401 error if the user is not logged in or is not an admin.
  */
-export async function requireAdminSession(event: H3Event): Promise<void> {
+export async function requireAdminSession(event: H3Event): Promise<any> {
   const session = await getUserSession(event);
 
   if (!session?.user || (session.user as Record<string, unknown>).role !== 'admin') {
@@ -16,6 +16,7 @@ export async function requireAdminSession(event: H3Event): Promise<void> {
       statusMessage: 'Unauthorized. Admin access required.',
     });
   }
+  return session;
 }
 
 /**

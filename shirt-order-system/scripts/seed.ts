@@ -41,6 +41,18 @@ async function seed() {
       is_open = EXCLUDED.is_open;
   `
 
+  console.log('[db:seed] Seeding default admin user...')
+  await sql`
+    INSERT INTO users (username, password_hash, name, role)
+    VALUES (
+      'admin',
+      '$2a$10$xGHRQ5ZDwGgEPYLXCYLhm.S14TmUlUt1GiYwm5R72BlRwCZwz1/WW',
+      'System Admin',
+      'admin'
+    )
+    ON CONFLICT (username) DO NOTHING;
+  `
+
   console.log('[db:seed] Seeding default sizes...')
   const defaultSizes = [
     { label: 'XS', surcharge: '0.00', sort_order: 0 },
