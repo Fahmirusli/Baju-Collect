@@ -106,24 +106,33 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // 4. Set sealed session cookie using nuxt-auth-utils
-    await setUserSession(event, {
-      user: {
-        role: authenticatedUser.role as 'admin',
-        username: authenticatedUser.username,
-        name: authenticatedUser.name,
+    // 4. Set sealed session cookie using nuxt-auth-utils with explicit secret fallback
+    const config = useRuntimeConfig()
+    const sessionSecret = (config.session as any)?.password || process.env.NUXT_SESSION_PASSWORD || 'group-shirt-order-system-secure-session-password-32chars'
+
+    await setUserSession(
+      event,
+      {
+        user: {
+          role: authenticatedUser.role as 'admin',
+          username: authenticatedUser.username,
+          name: authenticatedUser.name,
+        },
       },
-    })
+      {
+        password: sessionSecret,
+      }
+    )
 
     return { success: true }
-  } catch (error: unknown) {
+  } catch (error: any) {
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
     console.error('Login error:', error)
     throw createError({
       statusCode: 500,
-      message: 'Login failed',
+      message: error?.message || 'Login failed',
     })
   }
 })

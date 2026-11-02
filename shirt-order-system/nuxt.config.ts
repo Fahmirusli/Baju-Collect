@@ -16,7 +16,10 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     databaseUrl: process.env.NUXT_DATABASE_URL || process.env.DATABASE_URL || '',
-    sessionPassword: process.env.NUXT_SESSION_PASSWORD || process.env.SESSION_PASSWORD || 'baju-collect-secret-session-password-at-least-32-chars',
+    session: {
+      password: process.env.NUXT_SESSION_PASSWORD || process.env.SESSION_PASSWORD || 'group-shirt-order-system-secure-session-password-32chars',
+    },
+    sessionPassword: process.env.NUXT_SESSION_PASSWORD || process.env.SESSION_PASSWORD || 'group-shirt-order-system-secure-session-password-32chars',
     adminUsername: process.env.NUXT_ADMIN_USERNAME || 'admin',
     adminPasswordHash: process.env.NUXT_ADMIN_PASSWORD_HASH || '$2a$10$xGHRQ5ZDwGgEPYLXCYLhm.S14TmUlUt1GiYwm5R72BlRwCZwz1/WW',
     neonRealtimeUrl: process.env.NEON_REALTIME_URL || '',
