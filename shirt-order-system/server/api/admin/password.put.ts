@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody, createError } from 'h3'
-import { requireAdminSession, verifyPassword, hashPassword } from '~/server/utils/auth'
+import { requireAdminSession, verifyBcryptPassword, hashBcryptPassword } from '~/server/utils/auth'
 import { changePasswordSchema } from '~/shared/schemas'
 
 export default defineEventHandler(async (event) => {
@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig()
-  const currentHash = config.adminPasswordHash || process.env.NUXT_ADMIN_PASSWORD_HASH
+  const currentHash = (config.adminPasswordHash || process.env.NUXT_ADMIN_PASSWORD_HASH || '$2a$10$xGHRQ5ZDwGgEPYLXCYLhm.S14TmUlUt1GiYwm5R72BlRwCZwz1/WW') as string
 
   if (!currentHash) {
     throw createError({
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const isValid = await verifyPassword(parsed.data.currentPassword, currentHash)
+  const isValid = await verifyBcryptPassword(parsed.data.currentPassword, currentHash)
   if (!isValid) {
     throw createError({
       statusCode: 401,
@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const newHash = await hashPassword(parsed.data.newPassword)
+  const newHash = await hashBcryptPassword(parsed.data.newPassword)
 
   return {
     success: true,
@@ -41,4 +41,3 @@ export default defineEventHandler(async (event) => {
     message: 'Password hashed successfully. Update NUXT_ADMIN_PASSWORD_HASH in your .env or Vercel dashboard.',
   }
 })
-

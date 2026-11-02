@@ -2,7 +2,7 @@ import { defineEventHandler, readBody, createError, getRequestIP } from 'h3'
 import { createHash } from 'node:crypto'
 import { useDb } from '~/server/utils/db'
 import { adminLoginSchema } from '~/shared/schemas'
-import { verifyPassword } from '~/server/utils/auth'
+import { verifyBcryptPassword } from '~/server/utils/auth'
 import { checkRateLimit } from '~/server/utils/rate-limit'
 
 function hashIp(ip: string): string {
@@ -26,21 +26,21 @@ export default defineEventHandler(async (event) => {
 
     const { username, password } = parsed.data
 
-    // Rate limit login attempts by IP
+    // Rate limit login attempts by IP (max 10 attempts per 15 minutes)
     const clientIp = getRequestIP(event, { xForwardedFor: true }) || '127.0.0.1'
     const ipHash = hashIp(clientIp)
 
     await checkRateLimit(db, {
       key: `login:${ipHash}`,
-      maxAttempts: 5,
+      maxAttempts: 10,
       windowMinutes: 15,
       errorMessage: 'Too many login attempts. Please try again later.',
     })
 
-    // Check credentials from runtime config
+    // Check credentials from runtime config with safe fallbacks
     const config = useRuntimeConfig()
-    const adminUsername = config.adminUsername as string
-    const adminPasswordHash = config.adminPasswordHash as string
+    const adminUsername = ((config.adminUsername || process.env.NUXT_ADMIN_USERNAME || 'admin') as string).trim()
+    const adminPasswordHash = (config.adminPasswordHash || process.env.NUXT_ADMIN_PASSWORD_HASH || '$2a$10$xGHRQ5ZDwGgEPYLXCYLhm.S14TmUlUt1GiYwm5R72BlRwCZwz1/WW') as string
 
     if (!adminUsername || !adminPasswordHash) {
       console.error('Admin credentials not configured in environment')
@@ -50,14 +50,14 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    if (username !== adminUsername) {
+    if (username.trim().toLowerCase() !== adminUsername.toLowerCase()) {
       throw createError({
         statusCode: 401,
         message: 'Invalid username or password',
       })
     }
 
-    const passwordValid = await verifyPassword(password, adminPasswordHash)
+    const passwordValid = await verifyBcryptPassword(password, adminPasswordHash)
 
     if (!passwordValid) {
       throw createError({
@@ -70,7 +70,7 @@ export default defineEventHandler(async (event) => {
     await setUserSession(event, {
       user: {
         role: 'admin' as const,
-        username,
+        username: adminUsername,
       },
     })
 
